@@ -59,8 +59,7 @@ export const en = {
   useExternalTdpDescription: "Let SimpleDeckyTDP or other plugins manage TDP",
   tdpOverride: "TDP Override",
   tdpLabel: "TDP: {value}W",
-  showPerformancePresets: "Performance Presets ▼",
-  hidePerformancePresets: "Performance Presets ▲",
+
   fanMode: "Fan Mode",
   presetToast: "Preset: {value}",
   fanToast: "Fan: {value}",

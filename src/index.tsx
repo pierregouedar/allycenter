@@ -829,7 +829,6 @@ const FAN_MODES: ReadonlyArray<{ data: string; labelKey: TranslationKey }> = [
 const PerformanceSection: VFC = () => {
   const [profilesData, setProfilesData] = useState<ProfilesData | null>(null);
   const [tdpInfo, setTdpInfo] = useState<TdpInfo | null>(null);
-  const [expanded, setExpanded] = useState(false);
   const [loading, setLoading] = useState(true);
   const [currentTdp, setCurrentTdp] = useState(15);
   const [currentFanMode, setCurrentFanMode] = useState("auto");
@@ -873,6 +872,25 @@ const PerformanceSection: VFC = () => {
     return () => clearInterval(interval);
   }, []);
 
+  const profileIds = useMemo(
+    () => (profilesData ? Object.keys(profilesData.profiles) : []),
+    [profilesData]
+  );
+
+  const currentProfileIndex = useMemo(
+    () => Math.max(0, profileIds.indexOf(profilesData?.current ?? "")),
+    [profileIds, profilesData]
+  );
+
+  const profileNotchLabels = useMemo(
+    () =>
+      profileIds.map((id, i) => ({
+        notchIndex: i,
+        label: profilesData?.profiles[id]?.name ?? id,
+      })),
+    [profileIds, profilesData]
+  );
+
   const handleProfileSelect = async (profileId: string) => {
     const success = await setPerformanceProfile(profileId);
     if (success) {
@@ -892,6 +910,11 @@ const PerformanceSection: VFC = () => {
       // Disable TDP override when selecting a preset (backend already does this)
       setTdpOverrideState(false);
     }
+  };
+
+  const handleProfileSliderChange = async (index: number) => {
+    const profileId = profileIds[index];
+    if (profileId) await handleProfileSelect(profileId);
   };
 
   const handleTdpChange = async (tdp: number) => {
@@ -1017,50 +1040,19 @@ const PerformanceSection: VFC = () => {
           </PanelSectionRow>
 
           <PanelSectionRow>
-            <ButtonItem layout="below" onClick={() => setExpanded(!expanded)}>
-              {expanded ? t("hidePerformancePresets") : t("showPerformancePresets")}
-            </ButtonItem>
+            <SliderField
+              label={t("profile")}
+              value={currentProfileIndex}
+              min={0}
+              max={profileIds.length > 0 ? profileIds.length - 1 : 0}
+              step={1}
+              disabled={tdpOverride}
+              showValue={false}
+              notchLabels={profileNotchLabels}
+              notchTicksVisible={true}
+              onChange={handleProfileSliderChange}
+            />
           </PanelSectionRow>
-
-          {expanded && profilesData && (
-            <div>
-              {Object.entries(profilesData.profiles).map(([id, profile]) => (
-                <PanelSectionRow key={id}>
-                  <ButtonItem
-                    layout="below"
-                    onClick={() => handleProfileSelect(id)}
-                  >
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                        width: "100%",
-                      }}
-                    >
-                      <div>
-                        <span
-                          style={{
-                            fontWeight:
-                              profilesData.current === id ? "bold" : "normal",
-                            color: profilesData.current === id ? "#1a9fff" : "#fff",
-                          }}
-                        >
-                          {profile.name}
-                        </span>
-                        {profilesData.current === id && (
-                          <span style={{ color: "#1a9fff", marginLeft: "8px" }}>
-                            ✓
-                          </span>
-                        )}
-                      </div>
-                      <span style={{ color: "#8b929a" }}>{profile.tdp}W</span>
-                    </div>
-                  </ButtonItem>
-                </PanelSectionRow>
-              ))}
-            </div>
-          )}
         </div>
       )}
 
