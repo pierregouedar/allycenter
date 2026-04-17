@@ -25,6 +25,248 @@ const { useState, useEffect, useRef } = window.SP_REACT;
 type VFC<P = {}> = (props: P) => JSX.Element | null;
 type FC<P = {}> = (props: P) => JSX.Element | null;
 
+type SupportedLocale = "en" | "fr";
+
+const TRANSLATIONS = {
+  en: {
+    close: "Close",
+    loading: "Loading...",
+    unknown: "Unknown",
+    allyCenter: "Ally Center",
+    enabled: "enabled",
+    disabled: "disabled",
+    sectionDeviceInfo: "Device Info",
+    showDeviceInfo: "Show Device Info",
+    deviceInformation: "Device Information",
+    hardware: "HARDWARE",
+    system: "SYSTEM",
+    memory: "Memory",
+    kernel: "Kernel",
+    sectionBattery: "Battery",
+    batteryNotDetected: "Battery not detected",
+    charge: "Charge",
+    health: "Health",
+    showDetails: "Show Details ▼",
+    hideDetails: "Hide Details ▲",
+    cycleCount: "Cycle Count",
+    voltage: "Voltage",
+    designCapacity: "Design Capacity",
+    currentCapacity: "Current Capacity",
+    temperature: "Temperature",
+    chargeLimitLabel: "Charge Limit: {value}%",
+    chargeLimitToast: "Charge limit set to {value}%",
+    sectionRgbLighting: "RGB Lighting",
+    enableRgb: "Enable RGB",
+    color: "Color",
+    brightness: "Brightness",
+    effect: "Effect",
+    speed: "Speed",
+    static: "Static",
+    pulse: "Pulse",
+    spectrum: "Spectrum",
+    wave: "Wave",
+    flash: "Flash",
+    batteryLevel: "Battery Level",
+    off: "Off",
+    rogRed: "ROG Red",
+    cyan: "Cyan",
+    purple: "Purple",
+    green: "Green",
+    orange: "Orange",
+    pink: "Pink",
+    white: "White",
+    blue: "Blue",
+    auto: "Auto",
+    quiet: "Quiet",
+    balanced: "Balanced",
+    performance: "Performance",
+    sectionPerformance: "Performance",
+    profile: "Profile",
+    external: "External",
+    manual: "Manual",
+    temps: "Temps",
+    useExternalTdp: "Use External TDP",
+    useExternalTdpDescription: "Let SimpleDeckyTDP or other plugins manage TDP",
+    tdpOverride: "TDP Override",
+    tdpLabel: "TDP: {value}W",
+    showPerformancePresets: "Performance Presets ▼",
+    hidePerformancePresets: "Performance Presets ▲",
+    fanMode: "Fan Mode",
+    presetToast: "Preset: {value}",
+    fanToast: "Fan: {value}",
+    tdpOverrideEnabledToast: "TDP Override enabled - Manual mode",
+    restoredPresetToast: "Restored preset: {value}",
+    tdpManagedByExternalToast: "TDP managed by external plugin",
+    tdpManagedByAllyToast: "TDP managed by Ally Center",
+    sectionCpuSettings: "CPU Settings",
+    smtLabel: "SMT (Hyper-Threading)",
+    smtDescription: "Disable for better single-thread performance",
+    cpuBoost: "CPU Boost",
+    cpuBoostDescription: "Disable to reduce heat and power usage",
+    cpuControlsNotAvailable: "CPU controls not available",
+    smtToast: "SMT {value}",
+    cpuBoostToast: "CPU Boost {value}",
+    smtFailToast: "Failed to change SMT setting",
+    cpuBoostFailToast: "Failed to change CPU Boost setting",
+    sectionDownloadMode: "Download Mode",
+    enable: "Enable",
+    downloadModeDescription: "Black screen + 5W + RGB off",
+    downloadModeDisabledToast: "Download Mode disabled",
+    downloadModeEnabledToast: "Download Mode enabled - Open QAM to exit",
+    sectionAbout: "About",
+    aboutAllyCenter: "About Ally Center",
+    versionLabel: "Version 1.1.0",
+    createdBy: "Created by",
+    thanksTo: "THANKS TO",
+    charging: "Charging",
+    discharging: "Discharging",
+    full: "Full",
+    rogAlly: "ROG Ally",
+  },
+  fr: {
+    close: "Fermer",
+    loading: "Chargement...",
+    unknown: "Inconnu",
+    allyCenter: "Ally Center",
+    enabled: "activé",
+    disabled: "désactivé",
+    sectionDeviceInfo: "Infos appareil",
+    showDeviceInfo: "Afficher les infos",
+    deviceInformation: "Informations de l'appareil",
+    hardware: "MATÉRIEL",
+    system: "SYSTÈME",
+    memory: "Mémoire",
+    kernel: "Noyau",
+    sectionBattery: "Batterie",
+    batteryNotDetected: "Batterie non détectée",
+    charge: "Charge",
+    health: "Santé",
+    showDetails: "Afficher détails ▼",
+    hideDetails: "Masquer détails ▲",
+    cycleCount: "Cycles",
+    voltage: "Tension",
+    designCapacity: "Capacité nominale",
+    currentCapacity: "Capacité actuelle",
+    temperature: "Température",
+    chargeLimitLabel: "Limite de charge : {value}%",
+    chargeLimitToast: "Limite de charge définie à {value}%",
+    sectionRgbLighting: "Éclairage RGB",
+    enableRgb: "Activer RGB",
+    color: "Couleur",
+    brightness: "Luminosité",
+    effect: "Effet",
+    speed: "Vitesse",
+    static: "Statique",
+    pulse: "Pulsation",
+    spectrum: "Spectre",
+    wave: "Vague",
+    flash: "Flash",
+    batteryLevel: "Niveau batterie",
+    off: "Éteint",
+    rogRed: "Rouge ROG",
+    cyan: "Cyan",
+    purple: "Violet",
+    green: "Vert",
+    orange: "Orange",
+    pink: "Rose",
+    white: "Blanc",
+    blue: "Bleu",
+    auto: "Auto",
+    quiet: "Silencieux",
+    balanced: "Équilibré",
+    performance: "Performance",
+    sectionPerformance: "Performance",
+    profile: "Profil",
+    external: "Externe",
+    manual: "Manuel",
+    temps: "Temp.",
+    useExternalTdp: "Utiliser TDP externe",
+    useExternalTdpDescription: "Laisser SimpleDeckyTDP ou d'autres plugins gérer le TDP",
+    tdpOverride: "Forcer TDP",
+    tdpLabel: "TDP : {value}W",
+    showPerformancePresets: "Préréglages performance ▼",
+    hidePerformancePresets: "Préréglages performance ▲",
+    fanMode: "Mode ventilateur",
+    presetToast: "Préréglage : {value}",
+    fanToast: "Ventilateur : {value}",
+    tdpOverrideEnabledToast: "Forçage TDP activé - mode manuel",
+    restoredPresetToast: "Préréglage restauré : {value}",
+    tdpManagedByExternalToast: "TDP géré par un plugin externe",
+    tdpManagedByAllyToast: "TDP géré par Ally Center",
+    sectionCpuSettings: "Paramètres CPU",
+    smtLabel: "SMT (Hyper-Threading)",
+    smtDescription: "Désactiver pour de meilleures perfs mono-cœur",
+    cpuBoost: "Boost CPU",
+    cpuBoostDescription: "Désactiver pour réduire chaleur et consommation",
+    cpuControlsNotAvailable: "Contrôles CPU indisponibles",
+    smtToast: "SMT {value}",
+    cpuBoostToast: "Boost CPU {value}",
+    smtFailToast: "Échec du changement SMT",
+    cpuBoostFailToast: "Échec du changement Boost CPU",
+    sectionDownloadMode: "Mode téléchargement",
+    enable: "Activer",
+    downloadModeDescription: "Écran noir + 5W + RGB off",
+    downloadModeDisabledToast: "Mode téléchargement désactivé",
+    downloadModeEnabledToast: "Mode téléchargement activé - Ouvrez le QAM pour quitter",
+    sectionAbout: "À propos",
+    aboutAllyCenter: "À propos d'Ally Center",
+    versionLabel: "Version 1.1.0",
+    createdBy: "Créé par",
+    thanksTo: "MERCI À",
+    charging: "En charge",
+    discharging: "Décharge",
+    full: "Pleine",
+    rogAlly: "ROG Ally",
+  },
+} as const;
+
+type TranslationKey = keyof typeof TRANSLATIONS.en;
+
+const normalizeLocale = (lang: string): SupportedLocale => {
+  const normalized = lang.toLowerCase().replace("_", "-");
+  if (normalized.startsWith("fr")) return "fr";
+  return "en";
+};
+
+const getRawSteamLanguage = (): string | undefined => {
+  const w = window as any;
+  const candidates = [
+    w?.SteamClient?.Settings?.GetCurrentLanguage?.(),
+    w?.SteamClient?.Settings?.GetSteamUILanguage?.(),
+    w?.LocalizationManager?.m_strLanguage,
+    w?.i18nManager?.m_strLanguage,
+    w?.navigator?.language,
+  ];
+
+  for (const candidate of candidates) {
+    if (typeof candidate === "string" && candidate.length > 0) return candidate;
+    if (
+      candidate &&
+      typeof candidate === "object" &&
+      typeof candidate.language === "string"
+    ) {
+      return candidate.language;
+    }
+  }
+  return undefined;
+};
+
+const ACTIVE_LOCALE: SupportedLocale = normalizeLocale(
+  getRawSteamLanguage() || "en"
+);
+
+const t = (
+  key: TranslationKey,
+  vars?: Record<string, string | number>
+): string => {
+  const template = TRANSLATIONS[ACTIVE_LOCALE][key] ?? TRANSLATIONS.en[key];
+  if (!vars) return template;
+  return Object.entries(vars).reduce(
+    (acc, [name, value]) => acc.replaceAll(`{${name}}`, String(value)),
+    template
+  );
+};
+
 // Simple event emitter for download mode state management
 class DownloadModeState {
   private active: boolean = false;
@@ -214,24 +456,24 @@ interface CpuSettings {
 }
 
 const COLOR_PRESETS = [
-  { name: "ROG Red", color: "#FF0000" },
-  { name: "Cyan", color: "#00FFFF" },
-  { name: "Purple", color: "#8B00FF" },
-  { name: "Green", color: "#00FF00" },
-  { name: "Orange", color: "#FF8000" },
-  { name: "Pink", color: "#FF00FF" },
-  { name: "White", color: "#FFFFFF" },
-  { name: "Blue", color: "#0000FF" },
+  { key: "rogRed" as TranslationKey, color: "#FF0000" },
+  { key: "cyan" as TranslationKey, color: "#00FFFF" },
+  { key: "purple" as TranslationKey, color: "#8B00FF" },
+  { key: "green" as TranslationKey, color: "#00FF00" },
+  { key: "orange" as TranslationKey, color: "#FF8000" },
+  { key: "pink" as TranslationKey, color: "#FF00FF" },
+  { key: "white" as TranslationKey, color: "#FFFFFF" },
+  { key: "blue" as TranslationKey, color: "#0000FF" },
 ];
 
 const RGB_EFFECTS = [
-  { data: "static", label: "Static" },
-  { data: "pulse", label: "Pulse" },
-  { data: "spectrum", label: "Spectrum" },
-  { data: "wave", label: "Wave" },
-  { data: "flash", label: "Flash" },
-  { data: "battery", label: "Battery Level" },
-  { data: "off", label: "Off" },
+  { data: "static", labelKey: "static" as TranslationKey },
+  { data: "pulse", labelKey: "pulse" as TranslationKey },
+  { data: "spectrum", labelKey: "spectrum" as TranslationKey },
+  { data: "wave", labelKey: "wave" as TranslationKey },
+  { data: "flash", labelKey: "flash" as TranslationKey },
+  { data: "battery", labelKey: "batteryLevel" as TranslationKey },
+  { data: "off", labelKey: "off" as TranslationKey },
 ];
 
 const sectionStyle: React.CSSProperties = {
@@ -321,36 +563,54 @@ const DeviceInfoModal: VFC<{
     <ConfirmModal
       onEscKeypress={closeModal}
       onOK={closeModal}
-      strOKButtonText="Close"
+      strOKButtonText={t("close")}
       bHideCloseIcon={true}
       bAlertDialog={true}
     >
       <div style={{ textAlign: "center", marginBottom: "12px" }}>
-        <div style={{ fontSize: "18px", fontWeight: "bold", color: "#fff" }}>Device Information</div>
-        <div style={{ fontSize: "12px", color: "#1a9fff" }}>{deviceInfo?.model || "ROG Ally"}</div>
+        <div style={{ fontSize: "18px", fontWeight: "bold", color: "#fff" }}>
+          {t("deviceInformation")}
+        </div>
+        <div style={{ fontSize: "12px", color: "#1a9fff" }}>
+          {deviceInfo?.model || t("rogAlly")}
+        </div>
       </div>
       <div>
-        <div style={{ color: "#8b929a", fontSize: "11px", marginBottom: "4px" }}>HARDWARE</div>
+        <div style={{ color: "#8b929a", fontSize: "11px", marginBottom: "4px" }}>
+          {t("hardware")}
+        </div>
         <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "2px" }}>
           <span style={{ color: "#8b929a", fontSize: "12px" }}>CPU</span>
-          <span style={{ color: "#fff", fontSize: "11px" }}>{deviceInfo?.cpu || "Unknown"}</span>
+          <span style={{ color: "#fff", fontSize: "11px" }}>
+            {deviceInfo?.cpu || t("unknown")}
+          </span>
         </div>
         <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "2px" }}>
           <span style={{ color: "#8b929a", fontSize: "12px" }}>GPU</span>
-          <span style={{ color: "#fff", fontSize: "12px" }}>{deviceInfo?.gpu || "Unknown"}</span>
+          <span style={{ color: "#fff", fontSize: "12px" }}>
+            {deviceInfo?.gpu || t("unknown")}
+          </span>
         </div>
         <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "12px" }}>
-          <span style={{ color: "#8b929a", fontSize: "12px" }}>Memory</span>
-          <span style={{ color: "#fff", fontSize: "12px" }}>{deviceInfo?.memory_total || "Unknown"}</span>
+          <span style={{ color: "#8b929a", fontSize: "12px" }}>{t("memory")}</span>
+          <span style={{ color: "#fff", fontSize: "12px" }}>
+            {deviceInfo?.memory_total || t("unknown")}
+          </span>
         </div>
-        <div style={{ color: "#8b929a", fontSize: "11px", marginBottom: "4px" }}>SYSTEM</div>
+        <div style={{ color: "#8b929a", fontSize: "11px", marginBottom: "4px" }}>
+          {t("system")}
+        </div>
         <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "2px" }}>
           <span style={{ color: "#8b929a", fontSize: "12px" }}>BIOS</span>
-          <span style={{ color: "#fff", fontSize: "12px" }}>{deviceInfo?.bios_version || "Unknown"}</span>
+          <span style={{ color: "#fff", fontSize: "12px" }}>
+            {deviceInfo?.bios_version || t("unknown")}
+          </span>
         </div>
         <div style={{ display: "flex", justifyContent: "space-between" }}>
-          <span style={{ color: "#8b929a", fontSize: "12px" }}>Kernel</span>
-          <span style={{ color: "#fff", fontSize: "11px" }}>{deviceInfo?.kernel || "Unknown"}</span>
+          <span style={{ color: "#8b929a", fontSize: "12px" }}>{t("kernel")}</span>
+          <span style={{ color: "#fff", fontSize: "11px" }}>
+            {deviceInfo?.kernel || t("unknown")}
+          </span>
         </div>
       </div>
     </ConfirmModal>
@@ -390,14 +650,14 @@ const DeviceInfoSection: VFC = () => {
   };
 
   return (
-    <PanelSection title="Device Info">
+    <PanelSection title={t("sectionDeviceInfo")}>
       <PanelSectionRow>
         <ButtonItem
           layout="below"
           onClick={showDeviceInfoModal}
           disabled={loading}
         >
-          {loading ? "Loading..." : "Show Device Info"}
+          {loading ? t("loading") : t("showDeviceInfo")}
         </ButtonItem>
       </PanelSectionRow>
     </PanelSection>
@@ -432,8 +692,8 @@ const BatteryHealthSection: VFC = () => {
     const success = await setChargeLimit(value);
     if (success) {
       toaster.toast({
-        title: "Ally Center",
-        body: `Charge limit set to ${value}%`,
+        title: t("allyCenter"),
+        body: t("chargeLimitToast", { value }),
       });
     }
   };
@@ -447,22 +707,41 @@ const BatteryHealthSection: VFC = () => {
   const getStatusColor = (status: string): string => {
     switch (status) {
       case "Charging":
+      case "En charge":
         return "#4caf50";
       case "Discharging":
+      case "Décharge":
         return "#ff9800";
       case "Full":
+      case "Pleine":
         return "#2196f3";
       default:
         return "#8b929a";
     }
   };
 
+  const getStatusLabel = (status: string): string => {
+    switch (status) {
+      case "Charging":
+      case "En charge":
+        return t("charging");
+      case "Discharging":
+      case "Décharge":
+        return t("discharging");
+      case "Full":
+      case "Pleine":
+        return t("full");
+      default:
+        return status;
+    }
+  };
+
   if (loading || !batteryInfo?.present) {
     return (
-      <PanelSection title="Battery">
+      <PanelSection title={t("sectionBattery")}>
         <PanelSectionRow>
           <div style={{ color: "#8b929a" }}>
-            {loading ? "Loading..." : "Battery not detected"}
+            {loading ? t("loading") : t("batteryNotDetected")}
           </div>
         </PanelSectionRow>
       </PanelSection>
@@ -470,21 +749,21 @@ const BatteryHealthSection: VFC = () => {
   }
 
   return (
-    <PanelSection title="Battery">
+    <PanelSection title={t("sectionBattery")}>
       <div style={sectionStyle}>
         <div style={infoRowStyle}>
-          <span style={labelStyle}>Charge</span>
+          <span style={labelStyle}>{t("charge")}</span>
           <span
             style={{ ...valueStyle, color: getStatusColor(batteryInfo.status) }}
           >
-            {batteryInfo.capacity}% ({batteryInfo.status})
+            {batteryInfo.capacity}% ({getStatusLabel(batteryInfo.status)})
           </span>
         </div>
         <div style={batteryBarStyle(batteryInfo.capacity)}>
           <div style={batteryFillStyle(batteryInfo.capacity, "#1a9fff")} />
         </div>
         <div style={{ ...infoRowStyle, marginTop: "8px" }}>
-          <span style={labelStyle}>Health</span>
+          <span style={labelStyle}>{t("health")}</span>
           <span
             style={{ ...valueStyle, color: getHealthColor(batteryInfo.health) }}
           >
@@ -495,7 +774,7 @@ const BatteryHealthSection: VFC = () => {
 
       <PanelSectionRow>
         <ButtonItem layout="below" onClick={() => setExpanded(!expanded)}>
-          {expanded ? "Hide Details ▲" : "Show Details ▼"}
+          {expanded ? t("hideDetails") : t("showDetails")}
         </ButtonItem>
       </PanelSectionRow>
 
@@ -503,28 +782,28 @@ const BatteryHealthSection: VFC = () => {
         <div>
           <div style={sectionStyle}>
             <div style={infoRowStyle}>
-              <span style={labelStyle}>Cycle Count</span>
+              <span style={labelStyle}>{t("cycleCount")}</span>
               <span style={valueStyle}>{batteryInfo.cycle_count}</span>
             </div>
             <div style={infoRowStyle}>
-              <span style={labelStyle}>Voltage</span>
+              <span style={labelStyle}>{t("voltage")}</span>
               <span style={valueStyle}>{batteryInfo.voltage.toFixed(2)}V</span>
             </div>
             <div style={infoRowStyle}>
-              <span style={labelStyle}>Design Capacity</span>
+              <span style={labelStyle}>{t("designCapacity")}</span>
               <span style={valueStyle}>
                 {batteryInfo.design_capacity.toFixed(1)} Wh
               </span>
             </div>
             <div style={infoRowStyle}>
-              <span style={labelStyle}>Current Capacity</span>
+              <span style={labelStyle}>{t("currentCapacity")}</span>
               <span style={valueStyle}>
                 {batteryInfo.full_capacity.toFixed(1)} Wh
               </span>
             </div>
             {batteryInfo.temperature > 0 && (
               <div style={infoRowStyle}>
-                <span style={labelStyle}>Temperature</span>
+                <span style={labelStyle}>{t("temperature")}</span>
                 <span style={valueStyle}>{batteryInfo.temperature}°C</span>
               </div>
             )}
@@ -532,7 +811,7 @@ const BatteryHealthSection: VFC = () => {
 
           <PanelSectionRow>
             <SliderField
-              label={`Charge Limit: ${chargeLimit}%`}
+               label={t("chargeLimitLabel", { value: chargeLimit })}
               value={chargeLimit}
               min={60}
               max={100}
@@ -659,7 +938,7 @@ const RgbLightingSection: VFC = () => {
 
   const handleEffectChange = async (effect: {
     data: string;
-    label: string;
+    labelKey: TranslationKey;
   }) => {
     setCurrentEffect(effect.data);
     const success = await setRgbEffect(effect.data);
@@ -686,21 +965,22 @@ const RgbLightingSection: VFC = () => {
 
   if (loading) {
     return (
-      <PanelSection title="RGB Lighting">
+      <PanelSection title={t("sectionRgbLighting")}>
         <PanelSectionRow>
-          <div style={{ color: "#8b929a" }}>Loading...</div>
+          <div style={{ color: "#8b929a" }}>{t("loading")}</div>
         </PanelSectionRow>
       </PanelSection>
     );
   }
 
   const currentColor = rgbState?.color || "#FF0000";
+  const selectedEffect = RGB_EFFECTS.find((e) => e.data === currentEffect);
 
   return (
-    <PanelSection title="RGB Lighting">
+    <PanelSection title={t("sectionRgbLighting")}>
       <PanelSectionRow>
         <ToggleField
-          label="Enable RGB"
+          label={t("enableRgb")}
           checked={rgbState?.enabled ?? false}
           onChange={handleToggle}
         />
@@ -711,7 +991,7 @@ const RgbLightingSection: VFC = () => {
           {/* Color Slider with hue gradient */}
           <PanelSectionRow>
             <SliderField
-              label="Color"
+              label={t("color")}
               value={hue}
               min={0}
               max={360}
@@ -736,7 +1016,7 @@ const RgbLightingSection: VFC = () => {
           {/* Brightness */}
           <PanelSectionRow>
             <SliderField
-              label="Brightness"
+              label={t("brightness")}
               value={rgbState?.brightness ?? 100}
               min={0}
               max={100}
@@ -748,16 +1028,13 @@ const RgbLightingSection: VFC = () => {
           {/* Effect */}
           <PanelSectionRow>
             <DropdownItem
-              label="Effect"
-              strDefaultLabel={
-                RGB_EFFECTS.find((e) => e.data === currentEffect)?.label ||
-                "Static"
-              }
-              menuLabel={
-                RGB_EFFECTS.find((e) => e.data === currentEffect)?.label ||
-                "Static"
-              }
-              rgOptions={RGB_EFFECTS}
+              label={t("effect")}
+              strDefaultLabel={selectedEffect ? t(selectedEffect.labelKey) : t("static")}
+              menuLabel={selectedEffect ? t(selectedEffect.labelKey) : t("static")}
+              rgOptions={RGB_EFFECTS.map((effect) => ({
+                ...effect,
+                label: t(effect.labelKey),
+              }))}
               selectedOption={
                 RGB_EFFECTS.find((e) => e.data === currentEffect) ||
                 RGB_EFFECTS[0]
@@ -770,7 +1047,7 @@ const RgbLightingSection: VFC = () => {
           {animatedEffects.includes(currentEffect) && (
             <PanelSectionRow>
               <SliderField
-                label="Speed"
+                label={t("speed")}
                 value={rgbState?.speed ?? 50}
                 min={10}
                 max={100}
@@ -786,10 +1063,10 @@ const RgbLightingSection: VFC = () => {
 };
 
 const FAN_MODES = [
-  { data: "auto", label: "Auto" },
-  { data: "quiet", label: "Quiet" },
-  { data: "balanced", label: "Balanced" },
-  { data: "performance", label: "Performance" },
+  { data: "auto", labelKey: "auto" as TranslationKey },
+  { data: "quiet", labelKey: "quiet" as TranslationKey },
+  { data: "balanced", labelKey: "balanced" as TranslationKey },
+  { data: "performance", labelKey: "performance" as TranslationKey },
 ];
 
 const PerformanceSection: VFC = () => {
@@ -851,7 +1128,10 @@ const PerformanceSection: VFC = () => {
       if (profile?.fan_curve) {
         setCurrentFanMode(profile.fan_curve);
       }
-      toaster.toast({ title: "Ally Center", body: `Preset: ${profileName}` });
+      toaster.toast({
+        title: t("allyCenter"),
+        body: t("presetToast", { value: profileName }),
+      });
       // Disable TDP override when selecting a preset (backend already does this)
       setTdpOverrideState(false);
     }
@@ -865,7 +1145,7 @@ const PerformanceSection: VFC = () => {
   const handleFanModeChange = async (mode: { data: string; label: string }) => {
     setCurrentFanMode(mode.data);
     await setFanMode(mode.data);
-    toaster.toast({ title: "Ally Center", body: `Fan: ${mode.label}` });
+    toaster.toast({ title: t("allyCenter"), body: t("fanToast", { value: mode.label }) });
   };
 
   const handleTdpOverrideToggle = async (enabled: boolean) => {
@@ -873,17 +1153,17 @@ const PerformanceSection: VFC = () => {
     await setTdpOverride(enabled);
     if (enabled) {
       toaster.toast({
-        title: "Ally Center",
-        body: "TDP Override enabled - Manual mode",
+        title: t("allyCenter"),
+        body: t("tdpOverrideEnabledToast"),
       });
     } else {
       if (profilesData?.current) {
         await setPerformanceProfile(profilesData.current);
         const profileName =
-          profilesData.profiles[profilesData.current]?.name || "Unknown";
+          profilesData.profiles[profilesData.current]?.name || t("unknown");
         toaster.toast({
-          title: "Ally Center",
-          body: `Restored preset: ${profileName}`,
+          title: t("allyCenter"),
+          body: t("restoredPresetToast", { value: profileName }),
         });
       }
     }
@@ -894,46 +1174,46 @@ const PerformanceSection: VFC = () => {
     await setUseExternalTdp(enabled);
     if (enabled) {
       toaster.toast({
-        title: "Ally Center",
-        body: "TDP managed by external plugin",
+        title: t("allyCenter"),
+        body: t("tdpManagedByExternalToast"),
       });
     } else {
       toaster.toast({
-        title: "Ally Center",
-        body: "TDP managed by Ally Center",
+        title: t("allyCenter"),
+        body: t("tdpManagedByAllyToast"),
       });
     }
   };
 
   if (loading) {
     return (
-      <PanelSection title="Performance">
+      <PanelSection title={t("sectionPerformance")}>
         <PanelSectionRow>
-          <div style={{ color: "#8b929a" }}>Loading...</div>
+          <div style={{ color: "#8b929a" }}>{t("loading")}</div>
         </PanelSectionRow>
       </PanelSection>
     );
   }
 
   return (
-    <PanelSection title="Performance">
+    <PanelSection title={t("sectionPerformance")}>
       {tdpInfo && (
         <div style={sectionStyle}>
           <div style={infoRowStyle}>
-            <span style={labelStyle}>Profile</span>
+            <span style={labelStyle}>{t("profile")}</span>
             <span
               style={{ ...valueStyle, color: useExternalTdp ? "#8b929a" : (tdpOverride ? "#ff9800" : "#fff") }}
             >
               {useExternalTdp
-                ? "External"
+                ? t("external")
                 : tdpOverride
-                ? "Manual"
+                ? t("manual")
                 : profilesData?.profiles[profilesData.current]?.name ||
-                  "Unknown"}
+                  t("unknown")}
             </span>
           </div>
           <div style={infoRowStyle}>
-            <span style={labelStyle}>Temps</span>
+            <span style={labelStyle}>{t("temps")}</span>
             <span style={valueStyle}>
               {tdpInfo.cpu_temp.toFixed(0)}°C / {tdpInfo.gpu_temp.toFixed(0)}°C
             </span>
@@ -943,8 +1223,8 @@ const PerformanceSection: VFC = () => {
 
       <PanelSectionRow>
         <ToggleField
-          label="Use External TDP"
-          description="Let SimpleDeckyTDP or other plugins manage TDP"
+          label={t("useExternalTdp")}
+          description={t("useExternalTdpDescription")}
           checked={useExternalTdp}
           onChange={handleExternalTdpToggle}
         />
@@ -954,7 +1234,7 @@ const PerformanceSection: VFC = () => {
         <div>
           <PanelSectionRow>
             <ToggleField
-              label="TDP Override"
+              label={t("tdpOverride")}
               checked={tdpOverride}
               onChange={handleTdpOverrideToggle}
             />
@@ -962,7 +1242,7 @@ const PerformanceSection: VFC = () => {
 
           <PanelSectionRow>
             <SliderField
-              label={`TDP: ${currentTdp}W`}
+               label={t("tdpLabel", { value: currentTdp })}
               value={currentTdp}
               min={5}
               max={30}
@@ -975,7 +1255,7 @@ const PerformanceSection: VFC = () => {
 
           <PanelSectionRow>
             <ButtonItem layout="below" onClick={() => setExpanded(!expanded)}>
-              {expanded ? "Performance Presets ▲" : "Performance Presets ▼"}
+              {expanded ? t("hidePerformancePresets") : t("showPerformancePresets")}
             </ButtonItem>
           </PanelSectionRow>
 
@@ -1023,14 +1303,14 @@ const PerformanceSection: VFC = () => {
 
       <PanelSectionRow>
         <DropdownItem
-          label="Fan Mode"
+          label={t("fanMode")}
           strDefaultLabel={
-            FAN_MODES.find((m) => m.data === currentFanMode)?.label || "Auto"
+            t(FAN_MODES.find((m) => m.data === currentFanMode)?.labelKey || "auto")
           }
           menuLabel={
-            FAN_MODES.find((m) => m.data === currentFanMode)?.label || "Auto"
+            t(FAN_MODES.find((m) => m.data === currentFanMode)?.labelKey || "auto")
           }
-          rgOptions={FAN_MODES}
+          rgOptions={FAN_MODES.map((mode) => ({ ...mode, label: t(mode.labelKey) }))}
           selectedOption={
             FAN_MODES.find((m) => m.data === currentFanMode) || FAN_MODES[0]
           }
@@ -1067,14 +1347,14 @@ const CpuSettingsSection: VFC = () => {
     const success = await setSmtEnabled(enabled);
     if (success) {
       toaster.toast({
-        title: "Ally Center",
-        body: `SMT ${enabled ? "enabled" : "disabled"}`,
+        title: t("allyCenter"),
+        body: t("smtToast", { value: enabled ? t("enabled") : t("disabled") }),
       });
     } else {
       setSmtState(!enabled);
       toaster.toast({
-        title: "Ally Center",
-        body: "Failed to change SMT setting",
+        title: t("allyCenter"),
+        body: t("smtFailToast"),
       });
     }
   };
@@ -1084,35 +1364,37 @@ const CpuSettingsSection: VFC = () => {
     const success = await setCpuBoostEnabled(enabled);
     if (success) {
       toaster.toast({
-        title: "Ally Center",
-        body: `CPU Boost ${enabled ? "enabled" : "disabled"}`,
+        title: t("allyCenter"),
+        body: t("cpuBoostToast", {
+          value: enabled ? t("enabled") : t("disabled"),
+        }),
       });
     } else {
       setBoostState(!enabled);
       toaster.toast({
-        title: "Ally Center",
-        body: "Failed to change CPU Boost setting",
+        title: t("allyCenter"),
+        body: t("cpuBoostFailToast"),
       });
     }
   };
 
   if (loading) {
     return (
-      <PanelSection title="CPU Settings">
+      <PanelSection title={t("sectionCpuSettings")}>
         <PanelSectionRow>
-          <div style={{ color: "#8b929a" }}>Loading...</div>
+          <div style={{ color: "#8b929a" }}>{t("loading")}</div>
         </PanelSectionRow>
       </PanelSection>
     );
   }
 
   return (
-    <PanelSection title="CPU Settings">
+    <PanelSection title={t("sectionCpuSettings")}>
       {cpuSettings?.smt_available && (
         <PanelSectionRow>
           <ToggleField
-            label="SMT (Hyper-Threading)"
-            description="Disable for better single-thread performance"
+            label={t("smtLabel")}
+            description={t("smtDescription")}
             checked={smtEnabled}
             onChange={handleSmtToggle}
           />
@@ -1122,8 +1404,8 @@ const CpuSettingsSection: VFC = () => {
       {cpuSettings?.boost_available && (
         <PanelSectionRow>
           <ToggleField
-            label="CPU Boost"
-            description="Disable to reduce heat and power usage"
+            label={t("cpuBoost")}
+            description={t("cpuBoostDescription")}
             checked={boostEnabled}
             onChange={handleBoostToggle}
           />
@@ -1132,7 +1414,7 @@ const CpuSettingsSection: VFC = () => {
 
       {!cpuSettings?.smt_available && !cpuSettings?.boost_available && (
         <PanelSectionRow>
-          <div style={{ color: "#8b929a" }}>CPU controls not available</div>
+          <div style={{ color: "#8b929a" }}>{t("cpuControlsNotAvailable")}</div>
         </PanelSectionRow>
       )}
     </PanelSection>
@@ -1157,7 +1439,7 @@ const DownloadModeSection: VFC = () => {
         await setRgbEnabled(true);
       }
       downloadModeState.setActive(false);
-      toaster.toast({ title: "Ally Center", body: "Download Mode disabled" });
+      toaster.toast({ title: t("allyCenter"), body: t("downloadModeDisabledToast") });
     }
   };
 
@@ -1176,8 +1458,8 @@ const DownloadModeSection: VFC = () => {
         downloadModeState.setActive(true);
         Navigation.CloseSideMenus();
         toaster.toast({
-          title: "Ally Center",
-          body: "Download Mode enabled - Open QAM to exit",
+          title: t("allyCenter"),
+          body: t("downloadModeEnabledToast"),
         });
       }
     } else {
@@ -1186,11 +1468,11 @@ const DownloadModeSection: VFC = () => {
   };
 
   return (
-    <PanelSection title="Download Mode">
+    <PanelSection title={t("sectionDownloadMode")}>
       <PanelSectionRow>
         <ToggleField
-          label="Enable"
-          description="Black screen + 5W + RGB off"
+          label={t("enable")}
+          description={t("downloadModeDescription")}
           checked={downloadMode}
           onChange={handleToggle}
         />
@@ -1204,20 +1486,20 @@ const AboutModal: VFC<{ closeModal: () => void }> = ({ closeModal }) => {
     <ConfirmModal
       onEscKeypress={closeModal}
       onOK={closeModal}
-      strOKButtonText="Close"
+      strOKButtonText={t("close")}
       bHideCloseIcon={true}
       bAlertDialog={true}
     >
       <div style={{ textAlign: "center", marginBottom: "12px" }}>
-        <div style={{ fontSize: "18px", fontWeight: "bold", color: "#fff" }}>Ally Center</div>
-        <div style={{ fontSize: "12px", color: "#8b929a" }}>Version 1.1.0</div>
+        <div style={{ fontSize: "18px", fontWeight: "bold", color: "#fff" }}>{t("allyCenter")}</div>
+        <div style={{ fontSize: "12px", color: "#8b929a" }}>{t("versionLabel")}</div>
       </div>
       <div style={{ textAlign: "center" }}>
-        <div style={{ color: "#8b929a", fontSize: "11px" }}>Created by</div>
+        <div style={{ color: "#8b929a", fontSize: "11px" }}>{t("createdBy")}</div>
         <div style={{ color: "#1a9fff", fontSize: "14px", fontWeight: "bold" }}>Keith Baker</div>
         <div style={{ color: "#8b929a", fontSize: "11px", marginBottom: "12px" }}>Pixel Addict Games</div>
         
-        <div style={{ color: "#8b929a", fontSize: "11px", marginBottom: "4px", textAlign: "left" }}>THANKS TO</div>
+        <div style={{ color: "#8b929a", fontSize: "11px", marginBottom: "4px", textAlign: "left" }}>{t("thanksTo")}</div>
         <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "2px" }}>
           <span style={{ color: "#fff", fontSize: "12px" }}>HueSync</span>
           <span style={{ color: "#8b929a", fontSize: "11px" }}>honjow</span>
@@ -1245,10 +1527,10 @@ const AboutSection: VFC = () => {
   };
 
   return (
-    <PanelSection title="About">
+    <PanelSection title={t("sectionAbout")}>
       <PanelSectionRow>
         <ButtonItem layout="below" onClick={showAboutModal}>
-          About Ally Center
+          {t("aboutAllyCenter")}
         </ButtonItem>
       </PanelSectionRow>
     </PanelSection>
@@ -1284,8 +1566,8 @@ export default definePlugin(() => {
   ));
 
   return {
-    name: "Ally Center",
-    title: <div className={staticClasses.Title}>Ally Center</div>,
+    name: t("allyCenter"),
+    title: <div className={staticClasses.Title}>{t("allyCenter")}</div>,
     content: <AllyCenterContent />,
     icon: <AllyCenterIcon />,
     onDismount() {
