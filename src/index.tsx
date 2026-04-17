@@ -21,7 +21,7 @@ import {
   Navigation,
 } from "@decky/ui";
 import { callable, toaster, routerHook } from "@decky/api";
-const { useState, useEffect, useRef } = window.SP_REACT;
+const { useState, useEffect, useRef, useMemo } = window.SP_REACT;
 type VFC<P = {}> = (props: P) => JSX.Element | null;
 type FC<P = {}> = (props: P) => JSX.Element | null;
 
@@ -223,7 +223,7 @@ const TRANSLATIONS = {
 type TranslationKey = keyof typeof TRANSLATIONS.en;
 
 const normalizeLocale = (lang: string): SupportedLocale => {
-  const normalized = lang.toLowerCase().replace("_", "-");
+  const normalized = lang.toLowerCase().replace(/_/g, "-");
   if (normalized.startsWith("fr")) return "fr";
   return "en";
 };
@@ -251,15 +251,26 @@ const getRawSteamLanguage = (): string | undefined => {
   return undefined;
 };
 
-const ACTIVE_LOCALE: SupportedLocale = normalizeLocale(
-  getRawSteamLanguage() || "en"
-);
+const DEFAULT_LOCALE: SupportedLocale = "en";
+const DEFAULT_FAN_MODE_LABEL_KEY: TranslationKey = "auto";
+let cachedRawLanguage: string | undefined;
+let cachedLocale: SupportedLocale = DEFAULT_LOCALE;
+
+const getActiveLocale = (): SupportedLocale => {
+  const rawLanguage = getRawSteamLanguage() || DEFAULT_LOCALE;
+  if (rawLanguage !== cachedRawLanguage) {
+    cachedRawLanguage = rawLanguage;
+    cachedLocale = normalizeLocale(rawLanguage);
+  }
+  return cachedLocale;
+};
 
 const t = (
   key: TranslationKey,
   vars?: Record<string, string | number>
 ): string => {
-  const template = TRANSLATIONS[ACTIVE_LOCALE][key] ?? TRANSLATIONS.en[key];
+  const locale = getActiveLocale();
+  const template = TRANSLATIONS[locale][key] ?? TRANSLATIONS.en[key];
   if (!vars) return template;
   return Object.entries(vars).reduce(
     (acc, [name, value]) => acc.replaceAll(`{${name}}`, String(value)),
@@ -455,25 +466,25 @@ interface CpuSettings {
   boost_available: boolean;
 }
 
-const COLOR_PRESETS = [
-  { key: "rogRed" as TranslationKey, color: "#FF0000" },
-  { key: "cyan" as TranslationKey, color: "#00FFFF" },
-  { key: "purple" as TranslationKey, color: "#8B00FF" },
-  { key: "green" as TranslationKey, color: "#00FF00" },
-  { key: "orange" as TranslationKey, color: "#FF8000" },
-  { key: "pink" as TranslationKey, color: "#FF00FF" },
-  { key: "white" as TranslationKey, color: "#FFFFFF" },
-  { key: "blue" as TranslationKey, color: "#0000FF" },
+const COLOR_PRESETS: ReadonlyArray<{ labelKey: TranslationKey; color: string }> = [
+  { labelKey: "rogRed", color: "#FF0000" },
+  { labelKey: "cyan", color: "#00FFFF" },
+  { labelKey: "purple", color: "#8B00FF" },
+  { labelKey: "green", color: "#00FF00" },
+  { labelKey: "orange", color: "#FF8000" },
+  { labelKey: "pink", color: "#FF00FF" },
+  { labelKey: "white", color: "#FFFFFF" },
+  { labelKey: "blue", color: "#0000FF" },
 ];
 
-const RGB_EFFECTS = [
-  { data: "static", labelKey: "static" as TranslationKey },
-  { data: "pulse", labelKey: "pulse" as TranslationKey },
-  { data: "spectrum", labelKey: "spectrum" as TranslationKey },
-  { data: "wave", labelKey: "wave" as TranslationKey },
-  { data: "flash", labelKey: "flash" as TranslationKey },
-  { data: "battery", labelKey: "batteryLevel" as TranslationKey },
-  { data: "off", labelKey: "off" as TranslationKey },
+const RGB_EFFECTS: ReadonlyArray<{ data: string; labelKey: TranslationKey }> = [
+  { data: "static", labelKey: "static" },
+  { data: "pulse", labelKey: "pulse" },
+  { data: "spectrum", labelKey: "spectrum" },
+  { data: "wave", labelKey: "wave" },
+  { data: "flash", labelKey: "flash" },
+  { data: "battery", labelKey: "batteryLevel" },
+  { data: "off", labelKey: "off" },
 ];
 
 const sectionStyle: React.CSSProperties = {
@@ -707,13 +718,10 @@ const BatteryHealthSection: VFC = () => {
   const getStatusColor = (status: string): string => {
     switch (status) {
       case "Charging":
-      case "En charge":
         return "#4caf50";
       case "Discharging":
-      case "Décharge":
         return "#ff9800";
       case "Full":
-      case "Pleine":
         return "#2196f3";
       default:
         return "#8b929a";
@@ -723,13 +731,10 @@ const BatteryHealthSection: VFC = () => {
   const getStatusLabel = (status: string): string => {
     switch (status) {
       case "Charging":
-      case "En charge":
         return t("charging");
       case "Discharging":
-      case "Décharge":
         return t("discharging");
       case "Full":
-      case "Pleine":
         return t("full");
       default:
         return status;
@@ -974,7 +979,10 @@ const RgbLightingSection: VFC = () => {
   }
 
   const currentColor = rgbState?.color || "#FF0000";
-  const selectedEffect = RGB_EFFECTS.find((e) => e.data === currentEffect);
+  const selectedEffect = useMemo(
+    () => RGB_EFFECTS.find((e) => e.data === currentEffect),
+    [currentEffect]
+  );
 
   return (
     <PanelSection title={t("sectionRgbLighting")}>
@@ -1062,11 +1070,11 @@ const RgbLightingSection: VFC = () => {
   );
 };
 
-const FAN_MODES = [
-  { data: "auto", labelKey: "auto" as TranslationKey },
-  { data: "quiet", labelKey: "quiet" as TranslationKey },
-  { data: "balanced", labelKey: "balanced" as TranslationKey },
-  { data: "performance", labelKey: "performance" as TranslationKey },
+const FAN_MODES: ReadonlyArray<{ data: string; labelKey: TranslationKey }> = [
+  { data: "auto", labelKey: "auto" },
+  { data: "quiet", labelKey: "quiet" },
+  { data: "balanced", labelKey: "balanced" },
+  { data: "performance", labelKey: "performance" },
 ];
 
 const PerformanceSection: VFC = () => {
@@ -1142,10 +1150,16 @@ const PerformanceSection: VFC = () => {
     await setTdp(tdp);
   };
 
-  const handleFanModeChange = async (mode: { data: string; label: string }) => {
+  const handleFanModeChange = async (mode: {
+    data: string;
+    labelKey: TranslationKey;
+  }) => {
     setCurrentFanMode(mode.data);
     await setFanMode(mode.data);
-    toaster.toast({ title: t("allyCenter"), body: t("fanToast", { value: mode.label }) });
+    toaster.toast({
+      title: t("allyCenter"),
+      body: t("fanToast", { value: t(mode.labelKey) }),
+    });
   };
 
   const handleTdpOverrideToggle = async (enabled: boolean) => {
@@ -1305,10 +1319,16 @@ const PerformanceSection: VFC = () => {
         <DropdownItem
           label={t("fanMode")}
           strDefaultLabel={
-            t(FAN_MODES.find((m) => m.data === currentFanMode)?.labelKey || "auto")
+            t(
+              FAN_MODES.find((m) => m.data === currentFanMode)?.labelKey ||
+                DEFAULT_FAN_MODE_LABEL_KEY
+            )
           }
           menuLabel={
-            t(FAN_MODES.find((m) => m.data === currentFanMode)?.labelKey || "auto")
+            t(
+              FAN_MODES.find((m) => m.data === currentFanMode)?.labelKey ||
+                DEFAULT_FAN_MODE_LABEL_KEY
+            )
           }
           rgOptions={FAN_MODES.map((mode) => ({ ...mode, label: t(mode.labelKey) }))}
           selectedOption={
